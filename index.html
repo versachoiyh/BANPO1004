@@ -1,97 +1,59 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BANPO1001</title>
-<style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f4f2}
-#title{position:fixed;left:18px;top:14px;z-index:10;background:rgba(255,255,255,.86);
-padding:8px 12px;border-radius:6px;font:600 18px Arial,sans-serif;color:#222}
-#status{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;
-background:rgba(255,255,255,.92);padding:11px 15px;border-radius:7px;font:14px Arial,sans-serif;color:#555}
-canvas{display:block;touch-action:none}
-</style>
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
-"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}
-</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>BANPO1004</title>
+  <style>
+    html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#f4f4f4; }
+    #viewer { position:fixed; inset:0; width:100%; height:100%; }
+    #title {
+      position:fixed; top:14px; left:18px; z-index:5;
+      font:600 15px/1.2 Arial, sans-serif; color:#333;
+      background:rgba(255,255,255,.78); padding:7px 10px; border-radius:6px;
+      pointer-events:none;
+    }
+    #status {
+      position:fixed; left:50%; top:50%; transform:translate(-50%,-50%);
+      z-index:6; font:14px Arial,sans-serif; color:#555;
+      background:rgba(255,255,255,.9); padding:10px 14px; border-radius:7px;
+      pointer-events:none;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/build/o3dv.min.js"></script>
 </head>
 <body>
-<div id="title">BANPO1001</div>
-<div id="status">3D 모델 불러오는 중…</div>
-<script type="module">
-import * as THREE from 'three';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {TDSLoader} from 'three/addons/loaders/TDSLoader.js';
+  <div id="viewer"></div>
+  <div id="title">BANPO1004</div>
+  <div id="status">3D 모델 불러오는 중…</div>
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0xf4f4f2);
+  <script>
+    window.addEventListener('load', function () {
+      const status = document.getElementById('status');
+      const parent = document.getElementById('viewer');
 
-const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.01,1000000);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.setSize(innerWidth,innerHeight);
-renderer.outputColorSpace=THREE.SRGBColorSpace;
-document.body.appendChild(renderer.domElement);
+      const viewer = new OV.EmbeddedViewer(parent, {
+        backgroundColor: new OV.RGBAColor(244, 244, 244, 255),
+        defaultColor: new OV.RGBColor(225, 225, 225),
+        edgeSettings: new OV.EdgeSettings(
+          true,
+          new OV.RGBColor(45, 45, 45),
+          20
+        ),
+        onModelLoaded: function () {
+          status.style.display = 'none';
+        },
+        onModelLoadFailed: function () {
+          status.textContent = 'BANPO1004.3ds 파일을 불러오지 못했습니다.';
+        }
+      });
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x777777,2.3));
-const light=new THREE.DirectionalLight(0xffffff,1.8);
-light.position.set(10,20,10);
-scene.add(light);
+      viewer.LoadModelFromUrlList(['./BANPO1004.3ds']);
 
-const controls=new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
-controls.dampingFactor=.08;
-controls.screenSpacePanning=true;
-
-function fit(obj){
- const box=new THREE.Box3().setFromObject(obj);
- const size=box.getSize(new THREE.Vector3());
- const center=box.getCenter(new THREE.Vector3());
- const m=Math.max(size.x,size.y,size.z)||1;
- controls.target.copy(center);
- camera.near=Math.max(m/10000,.01);
- camera.far=m*100;
- camera.position.copy(center).add(new THREE.Vector3(m*1.2,m*.85,m*1.2));
- camera.updateProjectionMatrix();
- controls.update();
-}
-
-const loader=new TDSLoader();
-loader.setResourcePath('./');
-loader.load('./BANPO1001.3ds',obj=>{
- scene.add(obj);
- obj.traverse(c=>{
-  if(c.isMesh&&c.geometry){
-   const edges=new THREE.EdgesGeometry(c.geometry,30);
-   c.add(new THREE.LineSegments(edges,new THREE.LineBasicMaterial({
-    color:0x4d4d4d,transparent:true,opacity:.72
-   })));
-  }
- });
- fit(obj);
- document.getElementById('status').style.display='none';
-},xhr=>{
- if(xhr.total) document.getElementById('status').textContent=
- '3D 모델 불러오는 중… '+Math.round(xhr.loaded/xhr.total*100)+'%';
-},err=>{
- console.error(err);
- document.getElementById('status').textContent='BANPO1001.3ds 파일을 불러오지 못했습니다.';
-});
-
-function animate(){
- requestAnimationFrame(animate);
- controls.update();
- renderer.render(scene,camera);
-}
-animate();
-
-addEventListener('resize',()=>{
- camera.aspect=innerWidth/innerHeight;
- camera.updateProjectionMatrix();
- renderer.setSize(innerWidth,innerHeight);
-});
-</script>
+      window.addEventListener('resize', function () {
+        viewer.Resize();
+      });
+    });
+  </script>
 </body>
 </html>
