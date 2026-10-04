@@ -20,7 +20,7 @@
       pointer-events:none;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/build/o3dv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/online-3d-viewer@0.18.0/build/engine/o3dv.min.js"></script>
 </head>
 <body>
   <div id="viewer"></div>
@@ -32,13 +32,18 @@
       const status = document.getElementById('status');
       const parent = document.getElementById('viewer');
 
+      if (typeof OV === 'undefined') {
+        status.textContent = '3D 뷰어를 불러오지 못했습니다.';
+        return;
+      }
+
       const viewer = new OV.EmbeddedViewer(parent, {
         backgroundColor: new OV.RGBAColor(244, 244, 244, 255),
         defaultColor: new OV.RGBColor(225, 225, 225),
         edgeSettings: new OV.EdgeSettings(
           true,
           new OV.RGBColor(45, 45, 45),
-          20
+          1
         ),
         onModelLoaded: function () {
           status.style.display = 'none';
